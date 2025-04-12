@@ -102,7 +102,7 @@ This maps your space to a coordinates in the range $[-1,1]$.
 
 ### 4. NDC (Normalized Device Coordinates) to Screen Coordinates
 For a screen of width $W$ and height $H$:
-* $\text{screenX} = (\frac{x_{NDC}+1}{2})\cross{W}$
-* $\text{screenY} = (1 - \frac{y_{NDC}+1}{2})\cross{H}$
+* $\text{screenX} = (\frac{x_{NDC}+1}{2})\times{W}$
+* $\text{screenY} = (1 - \frac{y_{NDC}+1}{2})\times{H}$
 
 
