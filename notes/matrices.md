@@ -26,6 +26,7 @@ Converts object (model) space into world space. As an example, you might want to
 These vertices define its shape, but only relative to its own coordinate system. But consider that you want this cube to be in a different coordinate system, or rotated 32.4 degrees in some direction. All of a sudden, these coodinates don't work anymore. To make it the way you want, you'll use **Model Transformations**:
 
 **Translation**: If you want to move the cube so it's center is at some new position $(tx, ty, tz)$ rather than the origin.
+
 $$$
 \[
 T = \begin{bmatrix}
@@ -38,6 +39,7 @@ T = \begin{bmatrix}
 $$$
 
 **Scaling**: If you want the cube to be a different size, multiply them by a factor of $s_x, s_y,$ or $x_z$.
+
 $$$
 \[
 S = \begin{bmatrix}
@@ -50,6 +52,7 @@ s_x & 0   & 0   & 0 \\
 $$$
 
 **Rotation**: If you want to rotate the cube by some amount.
+
 $$$
 \[
 R_z = \begin{bmatrix}
@@ -62,6 +65,7 @@ R_z = \begin{bmatrix}
 $$$
 
 **Shearing**: This matrix skews an object by a shear factor $k$ along the x axis.
+
 $$$
 \[
 H_x = \begin{bmatrix}
@@ -82,6 +86,7 @@ This one positions and orients the camera in the world. You build this from a `L
 So now you have a 3D camera space, but you need to display it on a 2D screen and preserve perspective (objects farther away appear smaller, etc).
 
 A common matrix for for a field-of-view $\theta$, aspect ratio $\text{aspect}$, near clipping plane distance $n$, and far clipping plane distance $f$:
+
 $$$
 \[
 P = \begin{pmatrix}
