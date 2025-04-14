@@ -182,11 +182,11 @@ int main() {
 							camera.position.x += cameraSpeed * deltaTime;
 							camera.target.x += cameraSpeed * deltaTime;
 							break;
-						case SDLK_q:  // Move upward (increase y)
+						case SDLK_q:  // Move upward (decrease y)
 							camera.position.y -= cameraSpeed * deltaTime;
 							camera.target.y -= cameraSpeed * deltaTime;
 							break;
-						case SDLK_e:  // Move downward (decrease y)
+						case SDLK_e:  // Move downward (increase y)
 							camera.position.y += cameraSpeed * deltaTime;
 							camera.target.y += cameraSpeed * deltaTime;
 							break;

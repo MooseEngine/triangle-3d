@@ -41,3 +41,15 @@ When using SDL screen coordinates, $(0, 0)$ is in the top left. Your NDC (Normal
 
 ## Distortion when moving
 Don't worry about the distortion when moving around, it's just a product of the fact that the screen is a 2d projection of a 3d triangle, so when you move the location of the camera, the perspective of the camera may cause it to seem like there is distortion. I believe this wouldn't be very brow-raising if there was some shading or something to indicate a difference in depth.
+
+## Controls
+| Key | Behavior |
+|-----|----------|
+| `w` | Move forward (increase `z`) |
+| `s` | Move backward (decrease `z`) |
+| `a` | Move left (decrease `x`) |
+| `d` | Move right (increase `x`) |
+| `e` | Move downward (increase `y`) |
+| `q` | Move upward (decrease `y`) |
+
+See how the controls for `e` and `q` are opposite what you'd think they'd be. This is because `SDL` has a coordinate system that starts wtih $(0, 0)$ in the top left.
