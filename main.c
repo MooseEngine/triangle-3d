@@ -2,11 +2,11 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <math.h>
 
 #include <SDL2/SDL.h>
 
 #include "lib/linalg.h"
+#include "lib/model.h"
 
 // 0xAARRGGBB
 #define WHITE	0xFFFFFFFF
@@ -17,66 +17,30 @@
 #define SCREEN_WIDTH 800
 #define SCREEN_HEIGHT 600
 
-static const int NUM_TRIANGLE_VERTICES = 3;
-typedef struct {
-	Vec3 vertices[3];
-} Triangle;
-
 typedef struct {
 	float minX, maxX, minY, maxY;
 } BoundingBox;
 
-// TODO: edgeFunction and isInsideTriangle now have to be changed to account for 3D. Use Barycentrics.
-/**
- * @brief Computes whether a given vertex is on one side or the other of a line formed by two other Vertices.
- *
- * @param c The vertex in question.
- * @param A The first vertex forming a line.
- * @param B The vertex the line is formed with.
- *
- * @return The result of the edge function.
- */
-float edgeFunction(Vec3 c, Vec3 A, Vec3 B) {
-	return (c.y - A.y) * (B.x - A.x) - (c.x - A.x) * (B.y - A.y);
-}
 
-/**
- * @brief Uses an edge function to determine whether a given vertex is within a triange.
- *
- * @param c The vertex to test.
- * @param t The triangle in question.
- *
- * @return Whether the vertex is in the triangle. 0: no, 1: yes.
- */
-int isInsideTriangle(Vec3 c, Triangle t) {
-	float signAB = signbit(edgeFunction(c, t.vertices[0], t.vertices[1]));
-	float signBC = signbit(edgeFunction(c, t.vertices[1], t.vertices[2]));
-	float signCA = signbit(edgeFunction(c, t.vertices[2], t.vertices[0]));
-
-	return (signAB == signBC) && (signBC == signCA);
-}
-
-BoundingBox calculateBoundingBox(Triangle transformedTriangle) {
+// BoundingBox calculateBoundingBox(Triangle transformedTriangle) {
 	// TODO: implement
-}
+// }
 
-int main() {
-	// Prepare transformation matrices
-	const Triangle t = { .vertices = {
-		{ .x = 502, .y = 3  , .z = 200 },
-		{ .x = 381, .y = 242, .z = 300 },
-		{ .x = 119, .y = 113, .z = 400 }
-	}};
-	Triangle tScreen = { .vertices = {
+/**
+ * @brief	Applies MVP to a triangle given the triangle and a camera. Uses some default settings for the projection matrix.
+ *
+ * @param	t	The triangle in question
+ * @param	c	The camera in question
+ *
+ * @return	A	`Triangle` struct whose x, y, and z coordinates are the projected screen coordinates (where z is depth for depth
+ *				buffering).
+ */
+Triangle transformAndProjectTriangle(Triangle t, Camera c) {
+	Triangle screenTriangle = { .vertices = {
 		{ .x = 0, .y = 0, .z = 0 },
 		{ .x = 0, .y = 0, .z = 0 },
 		{ .x = 0, .y = 0, .z = 0 }
 	}};
-	const Camera camera = {
-		.position	= (Vec3) { 334, 119, 0	},
-		.target		= (Vec3) { 334, 119, 300}, // center of triangle
-		.up			= (Vec3) { 0  , 1  , 0	}
-	};
 
 	const float fov		= deg2rad(60.0f);
 	const float aspect	= (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT;
@@ -84,7 +48,7 @@ int main() {
 	const float far		= 1000.0f;
 
 	Mat4 modelMatrix = getModelMatrix();
-	Mat4 viewMatrix = getViewMatrix(camera);
+	Mat4 viewMatrix = getViewMatrix(c);
 	Mat4 projMatrix = getProjectionMatrix(fov, aspect, near, far);
 
 	// for each vertex in your triangle...
@@ -106,18 +70,33 @@ int main() {
 		transformed.y /= transformed.w;
 		transformed.z /= transformed.w;
 
-		tScreen.vertices[i].x = (int)((transformed.x + 1.0f) * 0.5f * SCREEN_WIDTH); // screenX
-		tScreen.vertices[i].y = (int)((1.0f - (transformed.y + 1.0f) * 0.5f) * SCREEN_HEIGHT); // screenY
-		tScreen.vertices[i].z = transformed.z; // depth for depth buffering
+		screenTriangle.vertices[i].x = (int)((transformed.x + 1.0f) * 0.5f * SCREEN_WIDTH); // screenX
+		screenTriangle.vertices[i].y = (int)((1.0f - (transformed.y + 1.0f) * 0.5f) * SCREEN_HEIGHT); // screenY
+		screenTriangle.vertices[i].z = transformed.z; // depth for depth buffering
 	}
 
+	return screenTriangle;
+}
+
+int main() {
+	// Prepare transformation matrices
+	const Triangle triangle = { .vertices = {
+		{ .x = 502, .y = 3  , .z = 200 },
+		{ .x = 381, .y = 242, .z = 300 },
+		{ .x = 119, .y = 113, .z = 400 }
+	}};
+	const Camera camera = {
+		.position	= (Vec3) { 334, 119, 0	},
+		.target		= (Vec3) { 334, 119, 300}, // center of triangle
+		.up			= (Vec3) { 0  , 1  , 0	}
+	};
+
 	// Rasterize the triangle
-	// BoundingBox boundingBox = calculateBoundingBox(tScreen);
 	
-	// printf("tScreen vertices:\n%f, %f, %f\n", tScreen.vertices[0].x, tScreen.vertices[0].y, tScreen.vertices[0].z);
-	// printf("%f, %f, %f\n", tScreen.vertices[1].x, tScreen.vertices[1].y, tScreen.vertices[1].z);
-	// printf("%f, %f, %f\n", tScreen.vertices[2].x, tScreen.vertices[2].y, tScreen.vertices[2].z);
+	Triangle transformedTriangle = transformAndProjectTriangle(triangle, camera);
 	
+	
+	// TODO: BoundingBox boundingBox = calculateBoundingBox(tScreen);
 
 	
 	// Initialize SDL
@@ -171,7 +150,7 @@ int main() {
 	for (int i = 0; i < SCREEN_WIDTH * SCREEN_HEIGHT; i++) {
 		// You can optimize this by calculating the max and min x and y values that the triangle can be.
 		Vec3 c = { .x = i % SCREEN_WIDTH, .y = i / SCREEN_WIDTH };
-		if (isInsideTriangle(c, tScreen)) {
+		if (isInsideTriangle(c, transformedTriangle)) {
 			framebuffer[i] = ORANGE;
 		} else {
 			framebuffer[i] = BLACK;

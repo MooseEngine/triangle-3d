@@ -37,10 +37,12 @@ Vec4 multiplyMat4Vec4(Mat4 mat, Vec4 vec) {
 Vec3 subtractVec3(Vec3 a, Vec3 b) {
 	return (Vec3) { a.x - b.x, a.y - b.y, a.z - b.z };
 }
+
 Vec3 normalizeVec3(Vec3 v) {
 	float mag = sqrtf(v.x*v.x + v.y*v.y + v.z*v.z);
 	return (Vec3) { v.x/mag, v.y/mag, v.z/mag };
 }
+
 Vec3 crossVec3(Vec3 a, Vec3 b) {
 	return (Vec3) {
 		a.y * b.z - a.z * b.y,
@@ -48,9 +50,11 @@ Vec3 crossVec3(Vec3 a, Vec3 b) {
 		a.x * b.y - a.y * b.x
 	};
 }
+
 float dotVec3(Vec3 a, Vec3 b) {
 	return a.x * b.x + a.y * b.y + a.z * b.z;
 }
+
 Vec3 negativeVec3(Vec3 v) {
 	return (Vec3) { -v.x, -v.y, -v.z };
 }
@@ -145,4 +149,8 @@ Mat4 getModelMatrix() {
 
 float deg2rad(float deg) {
 	return deg * (PI/180.0f);
+}
+
+float edgeFunction(Vec3 c, Vec3 A, Vec3 B) {
+	return (c.y - A.y) * (B.x - A.x) - (c.x - A.x) * (B.y - A.y);
 }

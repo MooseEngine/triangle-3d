@@ -1,3 +1,6 @@
+#ifndef LINALG_H
+#define LINALG_H
+
 typedef struct { float x, y, z; } Vec3;
 
 typedef struct { float x, y, z, w; } Vec4;
@@ -46,4 +49,23 @@ Mat4 getProjectionMatrix(float fov, float aspect, float near, float far);
  */
 Mat4 getModelMatrix();
 
+/**
+ * @brief	Converts degress to radians.
+ *
+ * @return	A float of the equivalent radians based on the specified degrees.
+ */
 float deg2rad(float deg);
+
+/**
+ * @brief Computes whether a given vertex is on one side or the other of a line formed by two other Vertices.
+ *  TODO: edgeFunction and isInsideTriangle now have to be changed to account for 3D. Use Barycentrics. <-- THIS IS FOR IF YOU WANT TO DO INTERPOLATION
+ *
+ * @param c The vertex in question.
+ * @param A The first vertex forming a line.
+ * @param B The vertex the line is formed with.
+ *
+ * @return The result of the edge function.
+ */
+float edgeFunction(Vec3 c, Vec3 A, Vec3 B);
+
+#endif /* LINALG_H */
