@@ -19,3 +19,25 @@ I separated out the building and linking processes in the makefile, so run `make
 
 # Camera Movement Branch
 This branch is dedicated to getting camera movement working. This will include getting user input (I anticipate by using `SDL2`) and then moving the camera based on that input.
+
+## `DeltaTime`
+`DeltaTime` is a measure of the elapsed time between consecutive frames. It's used to ensure that object movement and other time-dependent computations remain consistent regardless of variations in frame rate. Use it like so:
+```c
+uint32_t lastTime = SDL_GetTicks(); // time in milliseconds before the main loop starts
+
+while(true) {
+    uint32_t currentTime = SDL_GetTickets();
+    float deltaTime = (currentTime - lastTime) / 1000.0f;
+    lastTime = currentTime;
+    
+    // ...
+
+    camera.position.x += cameraSpeed * deltaTime;
+}
+```
+
+## SDL Screen Coordinates
+When using SDL screen coordinates, $(0, 0)$ is in the top left. Your NDC (Normalized Device Coordinates) to `SDL` coordinates conversion already handles this just fine, but in order to move the camera, you'll want to reverse what you'd intuitively think as increasing or decreasing `y`.
+
+## Distortion when moving
+Don't worry about the distortion when moving around, it's just a product of the fact that the screen is a 2d projection of a 3d triangle, so when you move the location of the camera, the perspective of the camera may cause it to seem like there is distortion. I believe this wouldn't be very brow-raising if there was some shading or something to indicate a difference in depth.

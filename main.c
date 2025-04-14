@@ -17,9 +17,11 @@
 #define SCREEN_WIDTH 800
 #define SCREEN_HEIGHT 600
 
+/*
 typedef struct {
 	float minX, maxX, minY, maxY;
 } BoundingBox;
+*/
 
 
 // BoundingBox calculateBoundingBox(Triangle transformedTriangle) {
@@ -85,7 +87,8 @@ int main() {
 		{ .x = 381, .y = 242, .z = 300 },
 		{ .x = 119, .y = 113, .z = 400 }
 	}};
-	const Camera camera = {
+	const float cameraSpeed = 500.0f;
+	Camera camera = {
 		.position	= (Vec3) { 334, 119, 0	},
 		.target		= (Vec3) { 334, 119, 300}, // center of triangle
 		.up			= (Vec3) { 0  , 1  , 0	}
@@ -93,7 +96,6 @@ int main() {
 
 	// Rasterize the triangle
 	
-	Triangle transformedTriangle = transformAndProjectTriangle(triangle, camera);
 	
 	
 	// TODO: BoundingBox boundingBox = calculateBoundingBox(tScreen);
@@ -145,28 +147,70 @@ int main() {
 		goto cleanup_framebuffer;
 	}
 
-	// Fill framebuffer with white if not inside triangle.
-	// If inside triangle, make it ORANGE
-	for (int i = 0; i < SCREEN_WIDTH * SCREEN_HEIGHT; i++) {
-		// You can optimize this by calculating the max and min x and y values that the triangle can be.
-		Vec3 c = { .x = i % SCREEN_WIDTH, .y = i / SCREEN_WIDTH };
-		if (isInsideTriangle(c, transformedTriangle)) {
-			framebuffer[i] = ORANGE;
-		} else {
-			framebuffer[i] = BLACK;
-		}
-	}
 	
 	// begin render loop
 	{
+		Uint32 lastTime = SDL_GetTicks();
+
 		int quit = 0;
 		SDL_Event event;
 		while (!quit) {
+			Uint32 currentTime = SDL_GetTicks();
+
+			// deltaTime in seconds
+			float deltaTime = (currentTime - lastTime) / 1000.0f;
+			lastTime = currentTime;
+
 			// handle any events
 			while (SDL_PollEvent(&event)) {
 				if (event.type == SDL_QUIT) quit = 1;
+				else if (event.type == SDL_KEYDOWN) { // Handle keypressed events (e.g. camera movement)
+					switch(event.key.keysym.sym) { // switch based off type of key -- `sym` --> `symbol`
+						case SDLK_w:  // Move forward (increase z)
+							camera.position.z += cameraSpeed * deltaTime;
+							camera.target.z += cameraSpeed * deltaTime;
+							break;
+						case SDLK_s:  // Move backward (decrease z)
+							camera.position.z -= cameraSpeed * deltaTime;
+							camera.target.z -= cameraSpeed * deltaTime;
+							break;
+						case SDLK_a:  // Move left (decrease x)
+							camera.position.x -= cameraSpeed * deltaTime;
+							camera.target.x -= cameraSpeed * deltaTime;
+							break;
+						case SDLK_d:  // Move right (increase x)
+							camera.position.x += cameraSpeed * deltaTime;
+							camera.target.x += cameraSpeed * deltaTime;
+							break;
+						case SDLK_q:  // Move upward (increase y)
+							camera.position.y -= cameraSpeed * deltaTime;
+							camera.target.y -= cameraSpeed * deltaTime;
+							break;
+						case SDLK_e:  // Move downward (decrease y)
+							camera.position.y += cameraSpeed * deltaTime;
+							camera.target.y += cameraSpeed * deltaTime;
+							break;
+						default:
+						break;
+					}
+				}
 			}
 
+			// Rasterize the camera (this time within the loop so we get updated camera placement info
+			Triangle transformedTriangle = transformAndProjectTriangle(triangle, camera);
+
+			// Fill framebuffer with BLACK if not inside triangle.
+			// If inside triangle, make it ORANGE
+			for (int i = 0; i < SCREEN_WIDTH * SCREEN_HEIGHT; i++) {
+				// You can optimize this by calculating the max and min x and y values that the triangle can be.
+				Vec3 c = { .x = i % SCREEN_WIDTH, .y = i / SCREEN_WIDTH };
+				if (isInsideTriangle(c, transformedTriangle)) {
+					framebuffer[i] = ORANGE;
+				} else {
+					framebuffer[i] = BLACK;
+				}
+			}
+	
 			// update the texture with the framebuffer content
 			// The last parameter is the `pitch` of the pixel data
 			// `pitch`/`stride` is the number of bytes between the start of one row of pixel data

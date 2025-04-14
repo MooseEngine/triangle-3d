@@ -85,29 +85,34 @@ Mat4 getViewMatrix(Camera camera) {
 	Vec3 forward = normalizeVec3(subtractVec3(camera.target, camera.position));
 
 	// right vector: the vector perpendicular to the forward direction and the given up vector
-	Vec3 right = normalizeVec3(crossVec3(forward, camera.up));
+	// swap camera.up and forward if you intend for the camera to be facing the +z axis instead of -z.
+	Vec3 right = normalizeVec3(crossVec3(camera.up, forward));
 	
 	// true up vector: the actual up direction in the camera's space
 	Vec3 trueUp = crossVec3(right, forward);
 
 	// Rotation
+	// First row: right vector
 	view.m[0][0] = right.x;
-	view.m[1][1] = right.y;
-	view.m[2][2] = right.z;
+	view.m[0][1] = right.y;
+	view.m[0][2] = right.z;
 	view.m[0][3] = -dotVec3(right, camera.position);
 
+	// Second row: up vector
 	view.m[1][0] = trueUp.x;
 	view.m[1][1] = trueUp.y;
 	view.m[1][2] = trueUp.z;
 	view.m[1][3] = -dotVec3(trueUp, camera.position);
 
 	// Depending on which convention you use, some people use -forward and some people use forward
+	// Third row: negative forward vector (so that the camera looks along the -z axis)
 	Vec3 negativeF = negativeVec3(forward);
 	view.m[2][0] = negativeF.x;
 	view.m[2][1] = negativeF.y;
 	view.m[2][2] = negativeF.z;
 	view.m[2][3] = dotVec3(forward, camera.position);
 
+	// Fourth row: homogeneous coordinates
 	view.m[3][0] = 0.0f;
 	view.m[3][1] = 0.0f;
 	view.m[3][2] = 0.0f;
