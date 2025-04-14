@@ -16,3 +16,6 @@ make; ./rasterizer
 ```
 
 I separated out the building and linking processes in the makefile, so run `make clean` if you want to get rid of the object files. They are `.gitignore`d though.
+
+# Camera Movement Branch
+This branch is dedicated to getting camera movement working. This will include getting user input (I anticipate by using `SDL2`) and then moving the camera based on that input.
