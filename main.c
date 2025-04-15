@@ -87,7 +87,7 @@ int main() {
 		{ .x = 381, .y = 242, .z = 300 },
 		{ .x = 119, .y = 113, .z = 400 }
 	}};
-	const float cameraSpeed = 500.0f;
+	const float cameraSpeed = 300.0f;
 	Camera camera = {
 		.position	= (Vec3) { 334, 119, 0	},
 		.target		= (Vec3) { 334, 119, 300}, // center of triangle
@@ -204,8 +204,18 @@ int main() {
 			for (int i = 0; i < SCREEN_WIDTH * SCREEN_HEIGHT; i++) {
 				// You can optimize this by calculating the max and min x and y values that the triangle can be.
 				Vec3 P = { .x = i % SCREEN_WIDTH, .y = i / SCREEN_WIDTH };
-				if (isInsideTriangle(P, transformedTriangle)) {
-					framebuffer[i] = ORANGE;
+				Vec3 bary = getBarycentricCoordinates(P, transformedTriangle);
+
+				// define which vertices are which color
+				float R_A = 0xFF, B_A = 0x00, G_A = 0x00; // vertices[0]: RED
+				float R_B = 0x00, B_B = 0xFF, G_B = 0x00; // vertices[1]: BLUE
+				float R_C = 0x00, B_C = 0x00, G_C = 0xFF; // vertices[2]: GREEN
+
+				if (isInsideTriangleFromBary(bary)) {
+					int R = bary.x * R_A + bary.y * R_B + bary.z * R_C;
+					int G = bary.x * G_A + bary.y * G_B + bary.z * G_C;
+					int B = bary.x * B_A + bary.y * B_B + bary.z * B_C;
+					framebuffer[i] = (R << 16) | (G << 8) | B;
 				} else {
 					framebuffer[i] = BLACK;
 				}

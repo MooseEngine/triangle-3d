@@ -70,6 +70,6 @@ float B_P = alpha * B_A + beta * B_B + gamma * B_C;
 
 Then, you can load it into your frame buffer like so:
 ```c
-framebuffer[i] = (R_P << 16) | (G << 8) | B; // each color is 4 bytes (one for each of ARGB)
+framebuffer[i] = (R_P << 16) | (G << 8) | B; // each color is 8 bytes (two for each of ARGB)
 ```
 
