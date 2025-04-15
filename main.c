@@ -203,8 +203,8 @@ int main() {
 			// If inside triangle, make it ORANGE
 			for (int i = 0; i < SCREEN_WIDTH * SCREEN_HEIGHT; i++) {
 				// You can optimize this by calculating the max and min x and y values that the triangle can be.
-				Vec3 c = { .x = i % SCREEN_WIDTH, .y = i / SCREEN_WIDTH };
-				if (isInsideTriangle(c, transformedTriangle)) {
+				Vec3 P = { .x = i % SCREEN_WIDTH, .y = i / SCREEN_WIDTH };
+				if (isInsideTriangle(P, transformedTriangle)) {
 					framebuffer[i] = ORANGE;
 				} else {
 					framebuffer[i] = BLACK;
