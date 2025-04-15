@@ -43,10 +43,6 @@ $$
 P = \alpha A + \beta B + \gamma C
 $$
 
-$$
-\text{Color}_P = \alpha\,\text{Color}_A + \beta\,\text{Color}_B + \gamma\,\text{Color}_C
-$$
-
 Or, in code:
 ```c
 float denom = ((B_y - C_y) * (A_x - C_x) + (C_x - B_x) * (A_y - C_y));
@@ -57,4 +53,23 @@ float gamma = 1.0f - alpha - beta;
 ```
 
 ## Interpolating Colors Using Barycentrics
+One use case for this is interpolating colors. Interpolating just means... <!-- TODO: figure this out haha -->
+
+Say you want each vertex of your triangle to be a different color, and you want the colors to blend as it goes from one vertex to the other. Let these colors be:
+* $\text{Color}_A=(R_A, G_A, B_A)$
+* $\text{Color}_B=(R_B, G_B, B_B)$
+* $\text{Color}_C=(R_C, G_C, B_C)$
+
+Then to have them blend, you can calculate each vertex's color channels:
+
+```c
+float R_P = alpha * R_A + beta * R_B + gamma * R_C;
+float G_P = alpha * G_A + beta * G_B + gamma * G_C;
+float B_P = alpha * B_A + beta * B_B + gamma * B_C;
+```
+
+Then, you can load it into your frame buffer like so:
+```c
+framebuffer[i] = (R_P << 16) | (G << 8) | B; // each color is 4 bytes (one for each of ARGB)
+```
 
