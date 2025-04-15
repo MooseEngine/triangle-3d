@@ -185,27 +185,27 @@ int main() {
 					switch(event.key.keysym.sym) { // switch based off type of key -- `sym` --> `symbol`
 						case SDLK_w:  // Move forward (increase z)
 							camera.position.z += cameraSpeed * deltaTime;
-							// camera.target.z += cameraSpeed * deltaTime;
+							camera.target.z += cameraSpeed * deltaTime;
 							break;
 						case SDLK_s:  // Move backward (decrease z)
 							camera.position.z -= cameraSpeed * deltaTime;
-							// camera.target.z -= cameraSpeed * deltaTime;
+							camera.target.z -= cameraSpeed * deltaTime;
 							break;
 						case SDLK_a:  // Move left (decrease x)
 							camera.position.x -= cameraSpeed * deltaTime;
-							// camera.target.x -= cameraSpeed * deltaTime;
+							camera.target.x -= cameraSpeed * deltaTime;
 							break;
 						case SDLK_d:  // Move right (increase x)
 							camera.position.x += cameraSpeed * deltaTime;
-							// camera.target.x += cameraSpeed * deltaTime;
+							camera.target.x += cameraSpeed * deltaTime;
 							break;
 						case SDLK_q:  // Move upward (decrease y)
 							camera.position.y -= cameraSpeed * deltaTime;
-							// camera.target.y -= cameraSpeed * deltaTime;
+							camera.target.y -= cameraSpeed * deltaTime;
 							break;
 						case SDLK_e:  // Move downward (increase y)
 							camera.position.y += cameraSpeed * deltaTime;
-							// camera.target.y += cameraSpeed * deltaTime;
+							camera.target.y += cameraSpeed * deltaTime;
 							break;
 						default:
 						break;
