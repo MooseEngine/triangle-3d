@@ -17,6 +17,9 @@
 #define SCREEN_WIDTH 800
 #define SCREEN_HEIGHT 600
 
+#define CLAMP(x, min, max) (((x) < (min)) ? (min) : (((x) > (max)) ? (max) : (x)))
+#define COLOR_TO_INT(channel) (int)(CLAMP(channel, 0.0f, 1.0f) * 255)
+
 /*
 typedef struct {
 	float minX, maxX, minY, maxY;
@@ -38,11 +41,14 @@ typedef struct {
  *				buffering).
  */
 Triangle transformAndProjectTriangle(Triangle t, Camera c) {
-	Triangle screenTriangle = { .vertices = {
-		{ .x = 0, .y = 0, .z = 0 },
-		{ .x = 0, .y = 0, .z = 0 },
-		{ .x = 0, .y = 0, .z = 0 }
-	}};
+	Triangle screenTriangle = {
+		.vertices = {
+			{ .x = 0, .y = 0, .z = 0 },
+			{ .x = 0, .y = 0, .z = 0 },
+			{ .x = 0, .y = 0, .z = 0 }
+		},
+	};
+	memcpy(screenTriangle.colors, t.colors, sizeof(screenTriangle.colors));
 
 	const float fov		= deg2rad(60.0f);
 	const float aspect	= (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT;
@@ -75,6 +81,14 @@ Triangle transformAndProjectTriangle(Triangle t, Camera c) {
 		screenTriangle.vertices[i].x = (int)((transformed.x + 1.0f) * 0.5f * SCREEN_WIDTH); // screenX
 		screenTriangle.vertices[i].y = (int)((1.0f - (transformed.y + 1.0f) * 0.5f) * SCREEN_HEIGHT); // screenY
 		screenTriangle.vertices[i].z = transformed.z; // depth for depth buffering
+
+		screenTriangle.reciprocalDepths[i] = 1/transformed.z; // NOTE: left off here
+		screenTriangle.icolors[i] = (Color) {
+			.A = screenTriangle.colors[i].A / transformed.z,
+			.R = screenTriangle.colors[i].R / transformed.z,
+			.G = screenTriangle.colors[i].G / transformed.z,
+			.B = screenTriangle.colors[i].B / transformed.z
+		};
 	}
 
 	return screenTriangle;
@@ -82,11 +96,18 @@ Triangle transformAndProjectTriangle(Triangle t, Camera c) {
 
 int main() {
 	// Prepare transformation matrices
-	const Triangle triangle = { .vertices = {
-		{ .x = 502, .y = 3  , .z = 200 },
-		{ .x = 381, .y = 242, .z = 300 },
-		{ .x = 119, .y = 113, .z = 400 }
-	}};
+	const Triangle triangle = {
+		.vertices = {
+			{ .x = 502, .y = 3  , .z = 200 },
+			{ .x = 381, .y = 242, .z = 300 },
+			{ .x = 119, .y = 113, .z = 400 }
+		},
+		.colors = {
+			{ .A = 1.0f, .R = 1.0f, .G = 0.0f, .B = 0.0f },
+			{ .A = 1.0f, .R = 0.0f, .G = 1.0f, .B = 0.0f },
+			{ .A = 1.0f, .R = 0.0f, .G = 0.0f, .B = 1.0f },
+		}
+	};
 	const float cameraSpeed = 300.0f;
 	Camera camera = {
 		.position	= (Vec3) { 334, 119, 0	},
@@ -94,10 +115,6 @@ int main() {
 		.up			= (Vec3) { 0  , 1  , 0	}
 	};
 
-	// Rasterize the triangle
-	
-	
-	
 	// TODO: BoundingBox boundingBox = calculateBoundingBox(tScreen);
 
 	
@@ -168,27 +185,27 @@ int main() {
 					switch(event.key.keysym.sym) { // switch based off type of key -- `sym` --> `symbol`
 						case SDLK_w:  // Move forward (increase z)
 							camera.position.z += cameraSpeed * deltaTime;
-							camera.target.z += cameraSpeed * deltaTime;
+							// camera.target.z += cameraSpeed * deltaTime;
 							break;
 						case SDLK_s:  // Move backward (decrease z)
 							camera.position.z -= cameraSpeed * deltaTime;
-							camera.target.z -= cameraSpeed * deltaTime;
+							// camera.target.z -= cameraSpeed * deltaTime;
 							break;
 						case SDLK_a:  // Move left (decrease x)
 							camera.position.x -= cameraSpeed * deltaTime;
-							camera.target.x -= cameraSpeed * deltaTime;
+							// camera.target.x -= cameraSpeed * deltaTime;
 							break;
 						case SDLK_d:  // Move right (increase x)
 							camera.position.x += cameraSpeed * deltaTime;
-							camera.target.x += cameraSpeed * deltaTime;
+							// camera.target.x += cameraSpeed * deltaTime;
 							break;
 						case SDLK_q:  // Move upward (decrease y)
 							camera.position.y -= cameraSpeed * deltaTime;
-							camera.target.y -= cameraSpeed * deltaTime;
+							// camera.target.y -= cameraSpeed * deltaTime;
 							break;
 						case SDLK_e:  // Move downward (increase y)
 							camera.position.y += cameraSpeed * deltaTime;
-							camera.target.y += cameraSpeed * deltaTime;
+							// camera.target.y += cameraSpeed * deltaTime;
 							break;
 						default:
 						break;
@@ -197,25 +214,31 @@ int main() {
 			}
 
 			// Rasterize the camera (this time within the loop so we get updated camera placement info
-			Triangle transformedTriangle = transformAndProjectTriangle(triangle, camera);
+			Triangle tt = transformAndProjectTriangle(triangle, camera);
 
 			// Fill framebuffer with BLACK if not inside triangle.
 			// If inside triangle, make it ORANGE
 			for (int i = 0; i < SCREEN_WIDTH * SCREEN_HEIGHT; i++) {
 				// You can optimize this by calculating the max and min x and y values that the triangle can be.
 				Vec3 P = { .x = i % SCREEN_WIDTH, .y = i / SCREEN_WIDTH };
-				Vec3 bary = getBarycentricCoordinates(P, transformedTriangle);
-
-				// define which vertices are which color
-				float R_A = 0xFF, B_A = 0x00, G_A = 0x00; // vertices[0]: RED
-				float R_B = 0x00, B_B = 0xFF, G_B = 0x00; // vertices[1]: BLUE
-				float R_C = 0x00, B_C = 0x00, G_C = 0xFF; // vertices[2]: GREEN
+				Bary3 bary = getBarycentricCoordinates(P, tt);
 
 				if (isInsideTriangleFromBary(bary)) {
-					int R = bary.x * R_A + bary.y * R_B + bary.z * R_C;
-					int G = bary.x * G_A + bary.y * G_B + bary.z * G_C;
-					int B = bary.x * B_A + bary.y * B_B + bary.z * B_C;
-					framebuffer[i] = (R << 16) | (G << 8) | B;
+
+					Color interpolatedColor = addColors(3,
+						multiplyFloatColor(bary.alpha,	tt.icolors[0]),
+						multiplyFloatColor(bary.beta,	tt.icolors[1]),
+						multiplyFloatColor(bary.gamma,	tt.icolors[2])
+					);
+
+					float interpolatedDepth =
+						bary.alpha	* tt.reciprocalDepths[0] +
+						bary.beta	* tt.reciprocalDepths[1] +
+						bary.gamma	* tt.reciprocalDepths[2];
+
+					Color final = multiplyFloatColor(1.0f / interpolatedDepth, interpolatedColor);
+
+					framebuffer[i] = (COLOR_TO_INT(final.R) << 16) | (COLOR_TO_INT(final.G) << 8) | COLOR_TO_INT(final.B);
 				} else {
 					framebuffer[i] = BLACK;
 				}

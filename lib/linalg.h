@@ -2,6 +2,7 @@
 #define LINALG_H
 
 typedef struct { float x, y, z; } Vec3;
+typedef struct { float alpha, beta, gamma; } Bary3;
 
 typedef struct { float x, y, z, w; } Vec4;
 

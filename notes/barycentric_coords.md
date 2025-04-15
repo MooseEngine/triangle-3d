@@ -72,4 +72,14 @@ Then, you can load it into your frame buffer like so:
 ```c
 framebuffer[i] = (R_P << 16) | (G << 8) | B; // each color is 8 bytes (two for each of ARGB)
 ```
+## Interpolating Colors in 3d (Persepective-Correct Interpolation)
+The issue here is, of course, that we may have a shape in 3 dimensions. Simply applying the strategy above to the projection won't correctly respresent perspective. To do this, we'll need to do the following:
+
+1. Store the reciprocal of the depth factor (i.e. $\frac{1}{w}).
+2. Multiply the intended vertex attribute (in this case, color) by the stored reciprocal.
+3. Interpolate in the screen space (**not** in projection space).
+4. Recover the perspective-correct attribute (again, in this case it's color).
+
+
+
 
